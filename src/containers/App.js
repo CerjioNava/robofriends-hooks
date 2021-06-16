@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';					// Eliminamos Component, no lo usaremos ahora
 import CardList from '../components/CardList.js';
 //import { robots } from "./robots.js";
 import SearchBox from '../components/SearchBox.js';
@@ -6,77 +6,65 @@ import Scroll from '../components/Scroll.js';
 import ErrorBoundary from '../components/ErrorBoundary.js';
 import './App.css';
 
-/*
-const state = {
-	robots: robots,
-	searchfield: ''
-}
-*/
-/*
-const App = () => {
-	return (
-		<div className="tc">
-			<h1 className="tc">RoboFriends</h1>
-			<SearchBox />
-			<CardList robots={robots}/>
-		</div>
-	);
-}
-*/
 
-class App extends Component {
-	constructor() {
-		super();
-		this.state = {
-			//robots: robots,
-			robots: [],
-			searchfield: ''
-		}
-	}
+// class App extends Component {			// Convertimos en función 
+// 	constructor() {
+// 		super();
+// 		this.state = {
+// 			//robots: robots,
+// 			robots: [],
+// 			searchfield: ''
+// 		}
+// 	}
 
 	// Añadimos un lifecycle method, se ejecuta al realizar mounting.
-	componentDidMount() {
-		console.log("Check");
-		fetch('https://jsonplaceholder.typicode.com/users')
-		.then(response => response.json())
-		.then(users=> this.setState({ robots: users }));
+	// componentDidMount() {
+	// 	console.log("Check");
+	// 	fetch('https://jsonplaceholder.typicode.com/users')
+	// 	.then(response => response.json())
+	// 	.then(users=> this.setState({ robots: users }));
 		
-		//this.setState({ robots: robots })
+	// 	//this.setState({ robots: robots })
+	// }
+
+function App() {
+
+	const [robots, setRobots] = useState([]);  						// Hooks
+	const [searchfield, setSearchfield] = useState('');
+	const [count, setCount] = useState(0);
+
+	// Definimos dentro del hook el side effect que queremos
+	useEffect(() => {
+		fetch('https://jsonplaceholder.typicode.com/users')
+			.then(response => response.json())
+			.then(users=> setRobots(users));
+		console.log(count)
+	}, [count]);				// Solo se ejecuta si el conteo cambia (si el boton se presiona). Esto es ejemplo por el useEffect.
+
+	// Una función de evento que creamos, ahora es una variable const:
+	const onSearchChange = (event) => {
+		setSearchfield(event.target.value)							// Función Hook
 	}
 
-	// Una función de evento que creamos:
-	onSearchChange = (event) => {
-		this.setState({ searchfield: event.target.value });
-		//console.log(event.target.value);
-	}
+	const filteredRobots = robots.filter(robot => {
+		return robot.name.toLowerCase().includes(searchfield.toLowerCase());
+	});		
+	//console.log(filteredRobots);
 
-	render() {
-		const { robots, searchfield } = this.state;
-
-		const filteredRobots = robots.filter(robot => {
-			return robot.name.toLowerCase().includes(searchfield.toLowerCase());
-		});		
-		console.log(filteredRobots);
-
-		//if (!robots.length) 			
-		//	return <h1>Loading</h1>
-		return !robots.length ? 
-			<h1>Loading</h1> :
-		//else { 
-		//	return (
-			(
-				<div className="tc">
-					<h1 className="f1">RoboFriends</h1>
-					<SearchBox searchChange={this.onSearchChange}/>
-					<Scroll>
-						<ErrorBoundary>
-							<CardList robots={filteredRobots}/>
-						</ErrorBoundary>
-					</Scroll>
-				</div>
-			);	
-		//)
-	}
+	return !robots.length ? 
+		<h1>Loading</h1> :
+		(
+			<div className="tc">
+				<h1 className="f1">RoboFriends</h1>
+				<button onClick={() => setCount(count+1)}>Click me!</button>
+				<SearchBox searchChange={onSearchChange}/>
+				<Scroll>
+					<ErrorBoundary>
+						<CardList robots={filteredRobots}/>
+					</ErrorBoundary>
+				</Scroll>
+			</div>
+		);	
 }
 
 export default App;
